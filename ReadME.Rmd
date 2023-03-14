@@ -1,0 +1,162 @@
+---
+title: "R_Assignment_ReadME"
+output: html_document
+date: "2023-03-14"
+---
+
+---
+title: "Rmd"
+output: html_document
+date: "2023-03-13"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Loading the files
+
+```{r}
+   fang_et_al_genotypes <- read_tsv ("https://raw.githubusercontent.com/EEOB-BioData/BCB546_Spring2023/main/assignments/UNIX_Assignment/fang_et_al_genotypes.txt")
+```
+
+```{r}
+snp_position <- read_tsv("https://raw.githubusercontent.com/EEOB-BioData/BCB546_Spring2023/main/assignments/UNIX_Assignment/snp_position.txt")
+```
+
+Filtering out for maize or teosinte
+
+```{r}
+maize_genotypes <- fang_et_al_genotypes %>% filter(Group %in% c("ZMMIL", "ZMMLR", "ZMMMR"))
+
+teosinte_genotypes <- fang_et_al_genotypes %>% filter(Group%in% c("ZMPBA","ZMPIL","ZMPJA"))
+```
+
+Cleaning my SNPs data for SNP_ID,Chromosome, and position.
+
+```{r}
+cleaned_snps <- snp_position[,c(1,3,4)]
+```
+
+Transposed either maize or teosinte data and kept it as a data frame.
+
+```{r}
+transposed_maize <- as.data.frame(t(maize_genotypes))
+transposed_teosinte <- as.data.frame(t(teosinte_genotypes))
+```
+
+Deleted unnecessary rows in maize and teosinte.
+
+```{r}
+transposed_maize <- transposed_maize[4:nrow(transposed_maize),]
+transposed_teosinte <- transposed_teosinte[4:nrow(transposed_teosinte),]
+```
+
+Assinged a variable for my row names. Which I will later add onto my genotype data.
+
+```{r}
+x <- rownames(transposed_maize)
+y <- rownames(transposed_teosinte)
+```
+
+Added my rownames to my transposed data and relabeled my first column as SNP_ID
+
+```{r}
+transposed_maize$SNP_ID <- x
+transposed_teosinte$SNP_ID <- y
+```
+
+Checked to make sure that this was added on to my transposed data sets.
+
+```{r}
+transposed_maize[1, (ncol(transposed_maize)-5):ncol(transposed_maize)]
+transposed_teosinte[1, (ncol(transposed_teosinte)-5):ncol(transposed_teosinte)]
+```
+
+Joined my SNP data to my transposed data by common column SNP_ID.
+
+```{r}
+maize_combined <- cleaned_snps %>% inner_join(transposed_maize, by = "SNP_ID")
+teosinte_combined <- cleaned_snps %>% inner_join(transposed_maize, by ="SNP_ID")
+```
+
+With my data I then extracted by specific chromosome number. (i= chromosome 1-10)
+
+From here on out I will be using chromosome 1 from each maize and teosinte. I had to manually go through and change chromosome number.
+
+```{r}
+maize_i <- maize_combined[maize_combined$Chromosome =="i",]
+teosinte_i <- maize_combined[maize_combined$Chromosome =="i",]
+
+## 1 example
+maize_1 <- maize_combined[maize_combined$Chromosome =="1",]
+teosinte_1 <- maize_combined[maize_combined$Chromosome =="1",]
+
+```
+
+
+Then to order them to increasing position
+
+```{r}
+maize_i_inc <- maize_i[order(as.integer(maize_i$Position), decreasing=F),]
+teosinte_i_inc <- teosinte_i[order(as.integer(teosinte_i$Position), decreasing=F),]
+
+##chr1
+maize_1_inc <- maize_1[order(as.integer(maize_1$Position), decreasing=F),]
+teosinte_1_inc <- teosinte_1[order(as.integer(teosinte_1$Position), decreasing=F),]
+```
+
+To remove the symbol from "-" to "?" I used
+
+```{r}
+maize_i[] <- lapply(maize_i,gsub, pattern="-", replacement="\\?")
+teosinte_i[] <- lapply(teosinte_i, gsub, pattern="-",replacement="\\?")
+
+##chr1
+maize_1_inc[] <- lapply(maize_1_inc,gsub, pattern="-", replacement="\\?")
+teosinte_1_inc[] <- lapply(teosinte_1_inc, gsub, pattern="-",replacement="\\?")
+```
+
+
+Then I ordered them to decreasing position
+
+```{r}
+    maize_i_dec <- maize_i[order(as.integer(maize_i$Position), decreasing=T),]
+    teosinte_i_dec <- maize_i[order(as.integer(teosinte_i$Position),decreasing=T,)]
+    
+    ##chr1
+     maize_1_dec <- maize_1[order(as.integer(maize_1$Position), decreasing=T),]
+    teosinte_1_dec <- maize_1[order(as.integer(teosinte_1$Position),decreasing=T,)]
+```
+
+Next I worked on replacing the symbols from "?" to "-" using
+
+```{r}
+maize_i_dec[] <- lapply(maize_i_dec,gsub, pattern="\\?", replacement = "-")
+teosinte_i_dec[] <- lapply(teosinte_i_dec,gsub, pattern="\\?", replacement = "-")
+
+##chr1
+maize_1_dec[] <- lapply(maize_1_dec,gsub, pattern="\\?", replacement = "-")
+teosinte_1_dec[] <- lapply(teosinte_1_dec,gsub, pattern="\\?", replacement = "-")
+```
+
+
+Finally I saved each output as a .txt file.
+
+```{r}
+write.table(maize_i_inc, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/maize_i_inc.txt", sep="\t", quote =F, row.names =F)
+
+write.table(maize_i_dec, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/maize_i_dec.txt", sep="\t", quote =F, row.names =F)
+
+write.table(teosinte_i_inc, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/teosinte_i_inc.txt", sep="\t", quote =F, row.names =F)
+
+write.table(teosinte_i_dec, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/teosinte_i_dec.txt", sep="\t", quote =F, row.names =F)
+
+
+##chr1 example for maize
+write.table(maize_1_inc, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/maize_1_inc.txt", sep="\t", quote =F, row.names =F)
+
+write.table(maize_1_dec, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/maize_1_dec.txt", sep="\t", quote =F, row.names =F)
+```
