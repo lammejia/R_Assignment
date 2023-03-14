@@ -15,7 +15,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## R Markdown
+Loading my library
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(tidyr)
 
+```
 Loading the files
 
 ```{r}
@@ -25,6 +32,30 @@ Loading the files
 ```{r}
 snp_position <- read_tsv("https://raw.githubusercontent.com/EEOB-BioData/BCB546_Spring2023/main/assignments/UNIX_Assignment/snp_position.txt")
 ```
+
+Inspecting the files
+```{r}
+view(fang_et_al_genotypes)
+view(snp_position)
+#Shows table of data
+
+head(fang_et_al_genotypes)
+head(snp_position)
+#To view first 6 rows
+
+tail(fang_et_al_genotypes)
+tail(snp_position)
+#To view last 6 rows
+
+str(fang_et_al_genotypes)
+str(snp_position)
+#To view structure of data
+
+object.size(fang_et_al_genotypes) #23124584 bytes
+object.size(snp_position) #359384 bytes
+#Gives file size 
+```
+
 
 Filtering out for maize or teosinte
 
