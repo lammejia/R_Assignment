@@ -1,0 +1,36 @@
+---
+title: "Peer Review for Ludvin Mejia by Shelly Kinney"
+author: "Shelly Kinney"
+date: "2023-03-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Review
+
+#Part One: Running All Code
+
+When running all the code at once, an error occurs at line 158:
+"Error in order(as.integer(teosinte_i$Position), decreasing=T,):
+  argument is missing, with no default"
+This error is resolved by moving the ',' out of parentheses after "decreasing=T"
+This error also occurs in line 162.
+
+There are also errors for lines 180, 182, 184, 186, 190, 192 because of referencing a personal directory.
+
+Code otherwise runs smoothly. 
+The "view" commands in the data inspection take the longest to run, and using "head" and "tail" commands might be sufficient instead.
+
+#Part Two: Other Comments
+
+In your maize files, the Sample IDs of the columns are now V1, V2, V3, etc. Was this intentional?
+
+In lines 158 and 162, you use "maize_i" in code for teosinte. I am not sure if you meant to do this, or if it supposed to be "teosinte_i" instead.
+
+#Part Three: Overall
+
+Overall, the code is clean with good explanation of steps throughout. 
+
