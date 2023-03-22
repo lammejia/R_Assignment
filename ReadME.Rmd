@@ -85,7 +85,7 @@ transposed_maize <- transposed_maize[4:nrow(transposed_maize),]
 transposed_teosinte <- transposed_teosinte[4:nrow(transposed_teosinte),]
 ```
 
-Assinged a variable for my row names. Which I will later add onto my genotype data.
+Assigned a variable for my row names. Which I will later add onto my genotype data.
 
 ```{r}
 x <- rownames(transposed_maize)
@@ -155,11 +155,11 @@ Then I ordered them to decreasing position
 
 ```{r}
     maize_i_dec <- maize_i[order(as.integer(maize_i$Position), decreasing=T),]
-    teosinte_i_dec <- maize_i[order(as.integer(teosinte_i$Position),decreasing=T,)]
+    teosinte_i_dec <- teosinte_i[order(as.integer(teosinte_i$Position),decreasing=T),]
     
     ##chr1
      maize_1_dec <- maize_1[order(as.integer(maize_1$Position), decreasing=T),]
-    teosinte_1_dec <- maize_1[order(as.integer(teosinte_1$Position),decreasing=T,)]
+    teosinte_1_dec <- teosinte_1[order(as.integer(teosinte_1$Position),decreasing=T),]
 ```
 
 Next I worked on replacing the symbols from "?" to "-" using
@@ -177,17 +177,101 @@ teosinte_1_dec[] <- lapply(teosinte_1_dec,gsub, pattern="\\?", replacement = "-"
 Finally I saved each output as a .txt file.
 
 ```{r}
-write.table(maize_i_inc, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/maize_i_inc.txt", sep="\t", quote =F, row.names =F)
+write.table(maize_i_inc, "/./ludvinmejia/R_Assignment_2/R_Assignment/maize_i_inc.txt", sep="\t", quote =F, row.names =F)
 
-write.table(maize_i_dec, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/maize_i_dec.txt", sep="\t", quote =F, row.names =F)
+write.table(maize_i_dec, "/./R_Assignment_2/R_Assignment/maize_i_dec.txt", sep="\t", quote =F, row.names =F)
 
-write.table(teosinte_i_inc, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/teosinte_i_inc.txt", sep="\t", quote =F, row.names =F)
+write.table(teosinte_i_inc, "/./ludvinmejia/R_Assignment_2/R_Assignment/teosinte_i_inc.txt", sep="\t", quote =F, row.names =F)
 
-write.table(teosinte_i_dec, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/teosinte_i_dec.txt", sep="\t", quote =F, row.names =F)
+write.table(teosinte_i_dec, "/./ludvinmejia/R_Assignment_2/R_Assignment/teosinte_i_dec.txt", sep="\t", quote =F, row.names =F)
 
 
 ##chr1 example for maize
-write.table(maize_1_inc, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/maize_1_inc.txt", sep="\t", quote =F, row.names =F)
+write.table(maize_1_inc, "/./R_Assignment_2/R_Assignment/maize_1_inc.txt", sep="\t", quote =F, row.names =F)
 
-write.table(maize_1_dec, "/Users/ludvinmejia/R_Assignment_2/R_Assignment/maize_1_dec.txt", sep="\t", quote =F, row.names =F)
+write.table(maize_1_dec, "/./R_Assignment_2/R_Assignment/maize_1_dec.txt", sep="\t", quote =F, row.names =F)
 ```
+
+
+To visualize the data 
+
+For the most part the SNPs are distributed pretty evenly in both maize and teosinte. I would argue that both chromosome 1 of maize and teosinte has a bigger range of positions and higher location of SNPs.
+```{r}
+#Plotting SNP position on different chromosomes
+
+ggplot(data = maize_combined) + geom_point(mapping = aes(x=as.numeric(Position), y=Chromosome))
+
+ggplot(data = teosinte_combined) + geom_point(mapping = aes(x=as.numeric(Position), y=Chromosome))
+
+
+```
+Pivoting my data to create a column known as SNP_ID and genotype.
+ 
+```{r}
+fang_et_al_genotypes_pivot <- pivot_longer(fang_et_al_genotypes, -1:-3, names_to='SNP_ID', values_to='genotype')
+
+```
+I then looked at which group has the most SNP.
+
+From the bar graph it looks like maize has more SNPs compared to teosinte and the other groups.
+```{r}
+
+ggplot(data = fang_et_al_genotypes_pivot) + geom_bar(mapping = aes(x=Group))
+
+```
+
+
+Then to look at homozygous and heterozygous proportions I created a function. Which will tell me if my genotypes are homozygous,missing if ?/?, or heteroyzgous if the genotypes are not the same.
+
+
+```{r}
+                                           
+zygo <- function(genotype){
++     +     return(ifelse(genotype=='A/A' | genotype=='T/T' | genotype=='G/G' | genotype=='C/C', 'homozygous', ifelse(genotype=='?/?', 'missing', 'heterozygous')))
+}  
+
+
+```
+
+
+I then used the function to go through my genotype columns. It then will create a new column that will tell me if my genotypes are homozygous, missing, or heterozygous.
+
+```{r}
+fang_zygosity <- mutate(fang_et_al_genotypes_pivot,Genotypes=zygosity(genotype))
+```
+
+I then looked at differences between heterozygous, homozygous, and missing sites between groups.
+
+```{r}
+  ggplot(data = fang_zygosity) + geom_bar(mapping = aes(x = Group, fill = Genotypes, ))
+
+#Have not figured out how to normalize data
+```
+
+
+For my own data visualization I decided to look closer at both maize and teosinte groups. I wanted to see the distribution of homozygous, heterozygous, and missing SNP locations on each chromosome.
+
+From this I was able to see that chromosome 1 for maize had the highest homozygous combinations. Throughout the chromosome it looks like there's a similar pattern of high number of genotypes that are homozygous with a low number of heterozygous genotypes. Which should be expected.
+
+```{r}
+#Used this to create a column of SNP genotype
+maize_pivot <- pivot_longer(maize_combined, -1:-3, names_to='ID', values_to='SNP_genotype')
+
+teosinte_pivot <- pivot_longer(teosinte_combined, -1:-3, names_to='ID', values_to='SNP_genotype')
+
+
+
+#Then I used my zygo function to look through my different genotype combinations and create a new column.
+
+zygosity_maize <- mutate(maize_pivot,Genotypes=zygosity(SNP_genotype))
+zygosity_teosinte <- mutate(teosinte_pivot,Genotypes=zygosity(SNP_genotype))
+
+#Plotting my chromosome against their respective genotype.
+
+ggplot(data = zygosity_teosinte) + geom_bar(mapping = aes(x = Chromosome, fill = Genotypes, ))
+ggplot(data = zygosity_maize) + geom_bar(mapping = aes(x = Chromosome, fill = Genotypes, ))
+
+```
+
+
+                                           
